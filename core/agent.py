@@ -24,6 +24,19 @@ from . import tools as tools_mod
 _TAG = re.compile(r"<[^>]+>")
 
 
+def _today():
+    """Today's date, in the system prompt on every turn.
+
+    The model has no clock. Without this it guesses the year, and it guesses
+    wrong. Local time, because "today" is the person's day, not UTC's."""
+    now = time.localtime()
+    return ("\nToday is %s, %d %s %d (%s). The local time is %s. Use this "
+            "date, and this year, whenever a question or a tool needs one.\n"
+            % (time.strftime("%A", now), now.tm_mday, time.strftime("%B", now),
+               now.tm_year, time.strftime("%Y-%m-%d", now),
+               time.strftime("%H:%M", now)))
+
+
 def _plain(text):
     """PowerShell serialises its streams as CLIXML when stderr is redirected,
     so a refusal arrives wrapped in markup. The model does not need the markup,
@@ -242,7 +255,8 @@ class Agent:
 
         system = agents_mod.system_prompt(self.agent_id, app.profile)
         messages = [{"role": "system",
-                     "content": system + _policy_briefing(pol, app, self.agent_id)}]
+                     "content": system + _today() +
+                                _policy_briefing(pol, app, self.agent_id)}]
         messages += history
         messages.append({"role": "user", "content": user_text})
 

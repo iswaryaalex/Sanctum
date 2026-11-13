@@ -1722,7 +1722,7 @@ real sandbox, under `policies/base.json`.
 ### Step 9. The merge
 
 The PowerShell script reads `vault/health/invites/*.json`. It opens
-`mailbox/calendar/2026-10-22.json`, appends the event with its `source` and
+`mailbox/calendar/2026-11-24.json`, appends the event with its `source` and
 `sourceId`, sorts by start time, and writes the file back.
 
 It prints:
