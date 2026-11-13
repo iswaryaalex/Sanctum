@@ -27,7 +27,7 @@ Why a snapshot rather than having the sandbox talk to Gmail live:
 
   * A live app password would have to live somewhere the agent might read, in
     an app that spends its afternoon demonstrating prompt injection. See
-    mailbox\\inbox\\2026-10-08-payment-update.json for why that is a bad pairing.
+    mailbox\\inbox\\2026-11-12-payment-update.json for why that is a bad pairing.
 
 Credentials come from the environment, never from a file in this repo:
 

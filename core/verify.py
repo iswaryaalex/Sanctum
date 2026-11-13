@@ -375,7 +375,7 @@ def run_all(app, include_network=True):
         # Skipping them with "covered by the checks above" would be a lie:
         # nothing above touches either path.
         "list_messages": {},
-        "read_message": {"id": "2026-10-06-northwind-invoice"},
+        "read_message": {"id": "2026-11-10-northwind-invoice"},
         "search_mail": {"query": "invoice"},
         "list_events": {},
         "find_free_slot": {},

@@ -22,6 +22,7 @@ Two deliberate decisions worth defending out loud:
 import base64
 import json
 import os
+import re
 import time
 
 from . import agents as agents_mod
@@ -424,18 +425,63 @@ def _b_draft_reply(a, ctx=None):
                     json.dumps(draft, indent=2))
 
 
+_ISO_DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
 def _b_list_events(a, ctx=None):
-    day = a.get("date")
+    """One day, a range of days, or everything - always in ONE sandbox.
+
+    Two things went wrong before this shape, both measured on 13 November
+    with "summarise my calendar this week":
+
+      * There was no range. The model walked the week one list_events(date)
+        call at a time, and the "omit for everything" answer is cut at 8000
+        characters by _fmt_result once a live feed holds a few weeks.
+      * A day with no events has no file, and Get-Content on a missing file is
+        an error. Three red "failed" cards for 13, 14 and 15 November, three
+        blobs of CLIXML in the model's context, and then a summary that said
+        18-22 November were empty - days it had never read - while ignoring
+        the events it HAD read for the 16th and 17th.
+
+    An empty day is now an answer, not an error. The folder is still listed
+    with -ErrorAction Stop inside the sandbox, so a policy that does not grant
+    the calendar is still refused by Windows - it can never come back as a
+    quiet "no events this week"."""
+    day, lo, hi = a.get("date"), a.get("from"), a.get("to")
     if day:
-        return shell_ps(
-            "$ErrorActionPreference='Stop';"
-            "Get-Content -LiteralPath %s -Raw"
-            % _psq(_mail_dir(ctx, "calendar", str(day) + ".json")))
+        lo = hi = day
+    for v in (lo, hi):
+        if v and not _ISO_DAY.match(str(v)):
+            return shell_ps("throw 'list_events: date, from and to are days "
+                            "as YYYY-MM-DD, got %s'" % str(v).replace("'", "''"))
+    # Each day is headed with its weekday. The day files carry only a date,
+    # and on 13 November the model, asked for "this week", put a Tuesday event
+    # on "Thursday, Nov 12" and called the 12th a Wednesday. Weekday arithmetic
+    # is the shell's job; the model only has to read it.
     return shell_ps(
         "$ErrorActionPreference='Stop';"
-        "Get-ChildItem -LiteralPath %s -Filter *.json -File | Sort-Object Name | "
-        "ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }"
-        % _psq(_mail_dir(ctx, "calendar")))
+        "$lo=%s; $hi=%s; $one=%s;"
+        "$inv=[Globalization.CultureInfo]::InvariantCulture;"
+        "function Day($s) { try { [datetime]::ParseExact($s,'yyyy-MM-dd',$inv)"
+        ".ToString('dddd d MMMM yyyy',$inv) + ' (' + $s + ')' } catch { $s } };"
+        "$days=@(Get-ChildItem -LiteralPath %s -Filter *.json -File | Sort-Object Name |"
+        " Where-Object { ($lo -eq '' -or $_.BaseName -ge $lo) -and"
+        " ($hi -eq '' -or $_.BaseName -le $hi) });"
+        "if ($one -ne '') {"
+        "  'Day: ' + (Day $one);"
+        "  if ($days.Count) { Get-Content -LiteralPath $days[0].FullName -Raw }"
+        "  else { '{\"date\":\"' + $one + '\",\"events\":[],"
+        "\"note\":\"No events on this day.\"}' }"
+        "} else {"
+        "  if ($lo -ne '' -or $hi -ne '') { 'Days from ' + (Day $lo) + ' to ' +"
+        "    (Day $hi) + '. A day that is not listed below has no events.' };"
+        "  if ($days.Count) { $days | ForEach-Object {"
+        " '=== ' + (Day $_.BaseName) + ' ===';"
+        " Get-Content -LiteralPath $_.FullName -Raw } }"
+        "  else { 'No events on any day in this range.' }"
+        "}"
+        % (_psq(lo or ""), _psq(hi or ""), _psq(day or ""),
+           _psq(_mail_dir(ctx, "calendar"))))
 
 
 def _b_find_free_slot(a, ctx=None):
@@ -937,10 +983,14 @@ CATALOGUE = [
 
     # -- base agent: calendar ---------------------------------------------------
 
-    Tool("list_events", "Read the calendar. Without a date this returns every "
-                        "day held, each tagged with its file name.",
-         {"properties": {"date": _str("A single day as YYYY-MM-DD. Omit for "
-                                      "everything.")},
+    Tool("list_events", "Read the calendar. For more than one day - this week, "
+                        "the next few days - make ONE call with from and to; "
+                        "do not call it once per day. For one day, pass date. "
+                        "A day with no events comes back with an empty events "
+                        "list. With no arguments it returns every day held.",
+         {"properties": {"date": _str("A single day as YYYY-MM-DD."),
+                         "from": _str("First day of a range, YYYY-MM-DD."),
+                         "to": _str("Last day of a range, YYYY-MM-DD.")},
           "required": []},
          _b_list_events, paths=_pl_calendar, shell="powershell", agent="base",
          needs=["read access to the calendar folder"]),

@@ -101,9 +101,13 @@ body{overflow:auto; display:grid; place-items:start center; min-height:100vh;
   background:var(--surface); display:grid; place-items:center; overflow:hidden;
   border:1px solid var(--border)}
 .agentface svg{width:132%; height:132%; margin-top:6%}
-.agentpick{padding:0 16px 14px; border-top:1px solid var(--border)}
-.agentpick .critterrow{margin-top:11px}
-.agentpick > span{font-size:11.5px; color:var(--muted)}
+/* Not ".agentpick": style.css gives that class to the agent <select> in the
+   Sandbox tab - height:32px, a border and a drop-down arrow - and inheriting
+   it squashed this row into 32px, so the faces spilled over the next card and
+   a click meant for a face landed on that card's header instead. */
+.facepick{padding:0 16px 14px; border-top:1px solid var(--border)}
+.facepick .critterrow{margin-top:11px}
+.facepick > span{font-size:11.5px; color:var(--muted)}
 
 .agentgroup{margin-bottom:22px}
 .agentgroup > h3{font-size:13px; margin-bottom:3px; display:flex;
@@ -299,7 +303,7 @@ const AGENT_SUGGESTIONS = ["Keep", "Pip", "Mortimer", "Scout", "Wick", "Bramble"
 const CONNECTORS = [
   { key: "gmail", box: "connGmail", input: "inGmail",
     rule: /^[A-Za-z0-9._%+-]+@gmail\.com$/i,
-    fallback: "castlekeep.workshop@gmail.com",
+    fallback: "amdmxcdemo@gmail.com",
     bad: "That needs to be a @gmail.com address.",
     ok: "Your mailbox will be seeded under this address." },
   { key: "reddit", box: "connReddit", input: "inReddit",
@@ -309,7 +313,7 @@ const CONNECTORS = [
     ok: "Saved threads will be filed under this account." },
   { key: "github", box: "connGithub", input: "inGithub",
     rule: /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/,
-    fallback: "octo-participant",
+    fallback: "meghsat",
     bad: "Letters, numbers and dashes, not starting or ending with a dash.",
     ok: "Repositories will be owned by this account." },
 ];
@@ -467,7 +471,7 @@ function renderPersonas() {
     card.appendChild(head);
 
     if (on) {
-      const pick = el("div", "agentpick");
+      const pick = el("div", "facepick");
       pick.appendChild(el("span", null, "Its face:"));
       pick.appendChild(critterRow(a.id, renderPersonas));
       card.appendChild(pick);
