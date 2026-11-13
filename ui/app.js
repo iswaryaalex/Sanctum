@@ -2242,8 +2242,12 @@ function drawKeeperBody() {
  * the merge is supposed to be judged on. */
 function flattenCalendar(days) {
   const all = (days || []).slice().sort(byDate);
-  const today = new Date().toISOString().slice(0, 10);
-  const upcoming = all.filter((d) => String(d.date) >= today);
+  const today = localToday();
+  const fromAgent = (ev) => ev.source && ev.source !== FEED_SOURCE && ev.source !== "seed";
+  const upcoming = all
+    .map((d) => (String(d.date) >= today ? d
+      : Object.assign({}, d, { events: (d.events || []).filter(fromAgent) })))
+    .filter((d) => (d.events || []).length);
   const out = [];
   for (const d of (upcoming.length ? upcoming : all)) {
     for (const ev of (d.events || [])) {
@@ -2260,6 +2264,15 @@ function flattenCalendar(days) {
 }
 
 const byDate = (a, b) => String(a.date).localeCompare(String(b.date));
+
+/* Today as YYYY-MM-DD on THIS machine's clock. toISOString() is UTC, which on
+ * a PST laptop turns into tomorrow at 16:00 - and the evening's events then
+ * drop out of a calendar that starts at "today". */
+function localToday() {
+  const t = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return t.getFullYear() + "-" + p(t.getMonth() + 1) + "-" + p(t.getDate());
+}
 
 function kitem(item) {
   // A mail item and a calendar item have different field names; normalise
@@ -2306,8 +2319,10 @@ function labelOf(agentId) {
 function prettyDay(iso) {
   const d = new Date(iso + "T00:00:00");
   if (isNaN(d)) return iso;
-  return d.toLocaleDateString(undefined,
-    { weekday: "long", day: "numeric", month: "long" });
+  // The year only when it is not this year - which is exactly when it matters.
+  const opts = { weekday: "long", day: "numeric", month: "long" };
+  if (d.getFullYear() !== new Date().getFullYear()) opts.year = "numeric";
+  return d.toLocaleDateString(undefined, opts);
 }
 
 function ago(ms) {

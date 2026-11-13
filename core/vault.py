@@ -339,13 +339,16 @@ SEED = {
             # somewhere to READ the date and time from first. Without this the
             # model has to invent them, and a demo built on an invented number
             # is a demo nobody should trust.
+            # Both upcoming dates sit after the last workshop (19 November
+            # 2026). On 17 November, with the old 22 October and 14 November
+            # dates, Health answered "there are no future appointments booked".
             "id": "appointments",
             "kind": "appointments",
             "title": "Appointments, booked and past",
-            "date": "2026-10-22",
+            "date": "2026-11-24",
             "upcoming": [
-                {"id": "appt-2026-10-22-osei",
-                 "date": "2026-10-22", "start": "14:30", "end": "15:00",
+                {"id": "appt-2026-11-24-osei",
+                 "date": "2026-11-24", "start": "14:30", "end": "15:00",
                  "with": "Dr Amara Osei",
                  "reason": "Three-month lipid recheck and statin review",
                  "location": "Riverside Family Practice, Room 4",
@@ -354,8 +357,8 @@ SEED = {
                  "bring": "Current medication list; fasted from 22:00 the night "
                           "before.",
                  "status": "confirmed"},
-                {"id": "appt-2026-11-14-dental",
-                 "date": "2026-11-14", "start": "09:15", "end": "09:45",
+                {"id": "appt-2026-11-28-dental",
+                 "date": "2026-11-28", "start": "09:15", "end": "09:45",
                  "with": "Northgate Dental, hygienist",
                  "reason": "Six-month scale and polish",
                  "location": "Northgate Dental Practice",

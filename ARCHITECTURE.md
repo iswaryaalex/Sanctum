@@ -175,7 +175,7 @@ flowchart LR
 
     FP["basecamp thread<br/>fingerprint changed?"] -.->|"every 20s, host-side stat"| INV
     FP -->|"ONE sandbox<br/>policies/base.json"| SYNC["sync_vaults"]
-    SYNC --> CAL["mailbox/calendar/2026-10-22.json<br/>event tagged 'from health'"]
+    SYNC --> CAL["mailbox/calendar/2026-11-24.json<br/>event tagged 'from health'"]
     CAL --> BUB["the bubble<br/>counter + 1"]
 ```
 
