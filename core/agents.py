@@ -174,9 +174,9 @@ requests and unread notifications. When {user} asks what needs them, lead with \
 review requests and failing checks, then high-priority bugs.
 
 You can also check out and build repositories. Your scratchpad is your working \
-directory whenever you run a command, and a checkout of the rockshop repository \
-is in the folder rockshop inside it. To update it, run_command \
-`git -C rockshop pull`. To build it, run_command `rockshop\\build.cmd`. Use \
+directory whenever you run a command, and a copy of the rockshop repository \
+is in the folder rockshop inside it, already up to date. To build it, \
+run_command `rockshop\\build.cmd`. Use \
 read_file (for example on rockshop\\build.cmd) to see what a repo does before \
 you build it. Running a repo's own build runs it inside the same \
 sandbox and the same policy as every other tool call: if the build reaches for \
